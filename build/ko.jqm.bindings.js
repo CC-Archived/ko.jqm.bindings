@@ -1,28 +1,31 @@
 /*
- * ko.jqm.bindings v1.0.0
+ * ko.jqm.bindings v1.0.1
  * Copyright (c) 2011 CodeCatalyst, LLC.
  * Open source under the MIT License.
  */
 (function() {
-  var checkedBindingInitHandler, checkedBindingUpdateHandler, keepNative, valueBindingUpdateHandler;
-  valueBindingUpdateHandler = ko.bindingHandlers['value']['update'];
-  ko.bindingHandlers['value']['update'] = function(element, valueAccessor) {
-    valueBindingUpdateHandler(element, valueAccessor);
-    if (element.tagName === "SELECT") {
+  var checkedBindingInitHandler, checkedBindingUpdateHandler, enableBindingUpdateHandler, keepNative, refreshElement, valueBindingUpdateHandler;
+  keepNative = ":jqmData(role='none'), :jqmData(role='nojs')";
+  refreshElement = function(element, method) {
+    var $element;
+    $element = $(element);
+    if (!$element.is(keepNative)) {
       try {
-        $(element).selectmenu("refresh");
-      } catch (error) {
-
-      }
-    } else if (element.type === "range") {
-      try {
-        $(element).slider("refresh");
+        return $element[method]("refresh");
       } catch (error) {
 
       }
     }
   };
-  keepNative = ":jqmData(role='none'), :jqmData(role='nojs')";
+  valueBindingUpdateHandler = ko.bindingHandlers['value']['update'];
+  ko.bindingHandlers['value']['update'] = function(element, valueAccessor) {
+    valueBindingUpdateHandler(element, valueAccessor);
+    if (element.tagName === "SELECT") {
+      refreshElement(element, "selectmenu");
+    } else if (element.type === "range") {
+      refreshElement(element, "slider");
+    }
+  };
   checkedBindingInitHandler = ko.bindingHandlers['checked']['init'];
   ko.bindingHandlers['checked']['init'] = function(element, valueAccessor) {
     var updateHandler;
@@ -63,10 +66,22 @@
   ko.bindingHandlers['checked']['update'] = function(element, valueAccessor) {
     checkedBindingUpdateHandler(element, valueAccessor);
     if (element.type === "radio" || element.type === "checkbox") {
-      try {
-        $(element).checkboxradio("refresh");
-      } catch (error) {
-
+      refreshElement(element, "checkboxradio");
+    }
+  };
+  enableBindingUpdateHandler = ko.bindingHandlers['enable']['update'];
+  ko.bindingHandlers['enable']['update'] = function(element, valueAccessor) {
+    enableBindingUpdateHandler(element, valueAccessor);
+    if (element.tagName === "SELECT") {
+      refreshElement(element, "selectmenu");
+    } else {
+      switch (element.type) {
+        case "checkbox":
+        case "radio":
+          refreshElement(element, "checkboxradio");
+          break;
+        case "range":
+          refreshElement(element, "slider");
       }
     }
   };

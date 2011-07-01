@@ -1,4 +1,4 @@
-# [ko.jqm.bindings](http://github.com/CodeCatalyst/ko.jqm.bindings) v1.0.0 
+# [ko.jqm.bindings](http://github.com/CodeCatalyst/ko.jqm.bindings) v1.0.1  
 # Copyright (c) 2011 [CodeCatalyst, LLC](http://www.codecatalyst.com/).  
 # Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 
@@ -6,24 +6,29 @@
 
 # Written in [CoffeeScript](http://coffeescript.com/)
 
+keepNative = ":jqmData(role='none'), :jqmData(role='nojs')"
+
+# Execute the enhanced element's associated jQuery Mobile widget plugin's 'refresh'.
+refreshElement = ( element, method ) ->
+	$element = $(element)
+	if not $element.is( keepNative )
+		try
+			$element[method]( "refresh" )
+		catch error
+			# intentionally ignore
+
+# Override the default 'value' update to refresh enhanced form elements.
 valueBindingUpdateHandler = ko.bindingHandlers['value']['update']
 ko.bindingHandlers['value']['update'] = ( element, valueAccessor ) ->
 	valueBindingUpdateHandler( element, valueAccessor )
 	
 	if element.tagName == "SELECT"
-		try
-			$(element).selectmenu( "refresh" )
-		catch error
-			# intentionally ignore
+		refreshElement( element, "selectmenu" )
 	else if element.type == "range"
-		try
-			$(element).slider( "refresh" )
-		catch error
-			# intentionally ignore
+		refreshElement( element, "slider" )
 	return
 
-keepNative = ":jqmData(role='none'), :jqmData(role='nojs')"
-
+# Override the default 'checked' init to listen for 'change' from enhanced checkboxes and radio buttons.
 checkedBindingInitHandler = ko.bindingHandlers['checked']['init']
 ko.bindingHandlers['checked']['init'] = ( element, valueAccessor ) ->
 	checkedBindingInitHandler( element, valueAccessor )
@@ -53,17 +58,31 @@ ko.bindingHandlers['checked']['init'] = ( element, valueAccessor ) ->
 			if allBindings["_ko_property_writers"] and allBindings["_ko_property_writers"]["checked"]
 				allBindings["_ko_property_writers"]["checked"] valueToWrite
 	
+	# jQuery Mobile enhanced checkboxes and radio buttons dispatch 'change' rather than 'click'.
 	if not $(element).is( keepNative )
 		ko.utils.registerEventHandler( element, "change", updateHandler )
 	return
 
+# Override the default 'checked' update to refresh enhanced checkboxes and radio buttons.
 checkedBindingUpdateHandler = ko.bindingHandlers['checked']['update']
 ko.bindingHandlers['checked']['update'] = ( element, valueAccessor ) ->
 	checkedBindingUpdateHandler( element, valueAccessor )
 	
 	if element.type == "radio" or element.type == "checkbox"
-		try
-			$(element).checkboxradio( "refresh" )
-		catch error
-			# intentionally ignore
+		refreshElement( element, "checkboxradio" )
+	return
+
+# Override the default 'enable' update to refresh enhanced form elements.
+enableBindingUpdateHandler = ko.bindingHandlers['enable']['update']
+ko.bindingHandlers['enable']['update'] = ( element, valueAccessor ) ->
+	enableBindingUpdateHandler( element, valueAccessor )
+	
+	if element.tagName == "SELECT"
+		refreshElement( element, "selectmenu" )
+	else 
+		switch element.type
+			when "checkbox", "radio"
+				refreshElement( element, "checkboxradio" )
+			when "range" 
+				refreshElement( element, "slider" )
 	return
