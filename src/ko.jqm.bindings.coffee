@@ -1,4 +1,4 @@
-# [ko.jqm.bindings](http://github.com/CodeCatalyst/ko.jqm.bindings) v1.0.1  
+# [ko.jqm.bindings](http://github.com/CodeCatalyst/ko.jqm.bindings) v1.0.2  
 # Copyright (c) 2011 [CodeCatalyst, LLC](http://www.codecatalyst.com/).  
 # Open source under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 
@@ -86,3 +86,32 @@ ko.bindingHandlers['enable']['update'] = ( element, valueAccessor ) ->
 			when "range" 
 				refreshElement( element, "slider" )
 	return
+
+# Override the default 'template' update to create or refresh enhanced form elements.
+templateBindingUpdateHandler = ko.bindingHandlers['template']['update']
+ko.bindingHandlers['template']['update'] = ( element, valueAccessor, allBindingsAccessor, viewModel ) ->
+	templateSubscriptionDomDataKey = '__ko__templateSubscriptionDomDataKey__'	
+	renderTemplateSubscriptionDomDataKey = '__kojqm__renderTemplateSubscriptionDomDataKey__'
+	
+	previousTemplateSubscription = ko.utils.domData.get( element, renderTemplateSubscriptionDomDataKey )
+	if previousTemplateSubscription?
+		previousTemplateSubscription.dispose()
+		
+	templateBindingUpdateHandler( element, valueAccessor, allBindingsAccessor, viewModel )
+	
+	templateSubscription = ko.utils.domData.get( element, templateSubscriptionDomDataKey )
+	
+	if templateSubscription?
+		renderTemplateSubscription = 
+			templateSubscription
+				.subscribe( 
+					( newValue ) ->
+						if element.tagName == "UL"
+							refreshElement( element, "listview" )
+						else
+							$(element).trigger('create');
+						return
+				)
+	
+	ko.utils.domData.set( element, renderTemplateSubscriptionDomDataKey, renderTemplateSubscription )
+

@@ -1,10 +1,10 @@
 /*
- * ko.jqm.bindings v1.0.1
+ * ko.jqm.bindings v1.0.2
  * Copyright (c) 2011 CodeCatalyst, LLC.
  * Open source under the MIT License.
  */
 (function() {
-  var checkedBindingInitHandler, checkedBindingUpdateHandler, enableBindingUpdateHandler, keepNative, refreshElement, valueBindingUpdateHandler;
+  var checkedBindingInitHandler, checkedBindingUpdateHandler, enableBindingUpdateHandler, keepNative, refreshElement, templateBindingUpdateHandler, valueBindingUpdateHandler;
   keepNative = ":jqmData(role='none'), :jqmData(role='nojs')";
   refreshElement = function(element, method) {
     var $element;
@@ -84,5 +84,27 @@
           refreshElement(element, "slider");
       }
     }
+  };
+  templateBindingUpdateHandler = ko.bindingHandlers['template']['update'];
+  ko.bindingHandlers['template']['update'] = function(element, valueAccessor, allBindingsAccessor, viewModel) {
+    var previousTemplateSubscription, renderTemplateSubscription, renderTemplateSubscriptionDomDataKey, templateSubscription, templateSubscriptionDomDataKey;
+    templateSubscriptionDomDataKey = '__ko__templateSubscriptionDomDataKey__';
+    renderTemplateSubscriptionDomDataKey = '__kojqm__renderTemplateSubscriptionDomDataKey__';
+    previousTemplateSubscription = ko.utils.domData.get(element, renderTemplateSubscriptionDomDataKey);
+    if (previousTemplateSubscription != null) {
+      previousTemplateSubscription.dispose();
+    }
+    templateBindingUpdateHandler(element, valueAccessor, allBindingsAccessor, viewModel);
+    templateSubscription = ko.utils.domData.get(element, templateSubscriptionDomDataKey);
+    if (templateSubscription != null) {
+      renderTemplateSubscription = templateSubscription.subscribe(function(newValue) {
+        if (element.tagName === "UL") {
+          refreshElement(element, "listview");
+        } else {
+          $(element).trigger('create');
+        }
+      });
+    }
+    return ko.utils.domData.set(element, renderTemplateSubscriptionDomDataKey, renderTemplateSubscription);
   };
 }).call(this);
