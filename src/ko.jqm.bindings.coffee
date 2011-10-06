@@ -90,30 +90,31 @@ ko.bindingHandlers['enable']['update'] = ( element, valueAccessor ) ->
 # Override the default 'template' update to create or refresh enhanced form elements.
 templateBindingUpdateHandler = ko.bindingHandlers['template']['update']
 ko.bindingHandlers['template']['update'] = ( element, valueAccessor, allBindingsAccessor, viewModel ) ->
+	refreshTemplate = () ->
+		$element = $(element)
+		if $element.jqmData("role") is "listview"
+			refreshElement( element, "listview" )
+		if $element.closest('html').length > 0
+			$element.trigger('create');
+		return
+	
 	templateSubscriptionDomDataKey = '__ko__templateSubscriptionDomDataKey__'	
 	renderTemplateSubscriptionDomDataKey = '__kojqm__renderTemplateSubscriptionDomDataKey__'
 	
 	previousTemplateSubscription = ko.utils.domData.get( element, renderTemplateSubscriptionDomDataKey )
 	if previousTemplateSubscription?
 		previousTemplateSubscription.dispose()
-		
+	
 	templateBindingUpdateHandler( element, valueAccessor, allBindingsAccessor, viewModel )
 	
-	templateSubscription = ko.utils.domData.get( element, templateSubscriptionDomDataKey )
+	refreshTemplate()
 	
-	refreshTemplate = () ->
-		$element = $(element)
-		if $element.jqmData("role") is "listview"
-			refreshElement( element, "listview" )
-		else
-			$element.trigger('create');
-		return
+	templateSubscription = ko.utils.domData.get( element, templateSubscriptionDomDataKey )
 	
 	if templateSubscription?
 		renderTemplateSubscription = templateSubscription.subscribe( refreshTemplate );
 	
 	ko.utils.domData.set( element, renderTemplateSubscriptionDomDataKey, renderTemplateSubscription )
 	
-	refreshTemplate()
-	
+	return
 

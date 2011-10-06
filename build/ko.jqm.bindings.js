@@ -88,6 +88,16 @@
   templateBindingUpdateHandler = ko.bindingHandlers['template']['update'];
   ko.bindingHandlers['template']['update'] = function(element, valueAccessor, allBindingsAccessor, viewModel) {
     var previousTemplateSubscription, refreshTemplate, renderTemplateSubscription, renderTemplateSubscriptionDomDataKey, templateSubscription, templateSubscriptionDomDataKey;
+    refreshTemplate = function() {
+      var $element;
+      $element = $(element);
+      if ($element.jqmData("role") === "listview") {
+        refreshElement(element, "listview");
+      }
+      if ($element.closest('html').length > 0) {
+        $element.trigger('create');
+      }
+    };
     templateSubscriptionDomDataKey = '__ko__templateSubscriptionDomDataKey__';
     renderTemplateSubscriptionDomDataKey = '__kojqm__renderTemplateSubscriptionDomDataKey__';
     previousTemplateSubscription = ko.utils.domData.get(element, renderTemplateSubscriptionDomDataKey);
@@ -95,20 +105,12 @@
       previousTemplateSubscription.dispose();
     }
     templateBindingUpdateHandler(element, valueAccessor, allBindingsAccessor, viewModel);
+    refreshTemplate();
     templateSubscription = ko.utils.domData.get(element, templateSubscriptionDomDataKey);
-    refreshTemplate = function() {
-      var $element;
-      $element = $(element);
-      if ($element.jqmData("role") === "listview") {
-        refreshElement(element, "listview");
-      } else {
-        $element.trigger('create');
-      }
-    };
     if (templateSubscription != null) {
       renderTemplateSubscription = templateSubscription.subscribe(refreshTemplate);
     }
     ko.utils.domData.set(element, renderTemplateSubscriptionDomDataKey, renderTemplateSubscription);
-    return refreshTemplate();
   };
+  ko.utils.setDomNodeChildren;
 }).call(this);
