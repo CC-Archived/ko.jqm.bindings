@@ -101,17 +101,18 @@ ko.bindingHandlers['template']['update'] = ( element, valueAccessor, allBindings
 	
 	templateSubscription = ko.utils.domData.get( element, templateSubscriptionDomDataKey )
 	
+	refreshTemplate = () ->
+		if element.tagName == "UL"
+			refreshElement( element, "listview" )
+		else
+			$(element).trigger('create');
+		return
+	
 	if templateSubscription?
-		renderTemplateSubscription = 
-			templateSubscription
-				.subscribe( 
-					( newValue ) ->
-						if element.tagName == "UL"
-							refreshElement( element, "listview" )
-						else
-							$(element).trigger('create');
-						return
-				)
+		renderTemplateSubscription = templateSubscription.subscribe( refreshTemplate );
 	
 	ko.utils.domData.set( element, renderTemplateSubscriptionDomDataKey, renderTemplateSubscription )
+	
+	refreshTemplate()
+	
 
