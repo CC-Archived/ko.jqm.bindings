@@ -102,10 +102,11 @@ ko.bindingHandlers['template']['update'] = ( element, valueAccessor, allBindings
 	templateSubscription = ko.utils.domData.get( element, templateSubscriptionDomDataKey )
 	
 	refreshTemplate = () ->
-		if element.tagName == "UL"
+		$element = $(element)
+		if $element.jqmData("role") is "listview"
 			refreshElement( element, "listview" )
 		else
-			$(element).trigger('create');
+			$element.trigger('create');
 		return
 	
 	if templateSubscription?

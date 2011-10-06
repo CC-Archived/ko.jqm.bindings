@@ -97,10 +97,12 @@
     templateBindingUpdateHandler(element, valueAccessor, allBindingsAccessor, viewModel);
     templateSubscription = ko.utils.domData.get(element, templateSubscriptionDomDataKey);
     refreshTemplate = function() {
-      if (element.tagName === "UL") {
+      var $element;
+      $element = $(element);
+      if ($element.jqmData("role") === "listview") {
         refreshElement(element, "listview");
       } else {
-        $(element).trigger('create');
+        $element.trigger('create');
       }
     };
     if (templateSubscription != null) {
