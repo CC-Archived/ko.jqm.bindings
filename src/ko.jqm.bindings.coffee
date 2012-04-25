@@ -19,8 +19,8 @@ refreshElement = ( element, method ) ->
 
 # Override the default 'value' update to refresh enhanced form elements.
 valueBindingUpdateHandler = ko.bindingHandlers['value']['update']
-ko.bindingHandlers['value']['update'] = ( element, valueAccessor ) ->
-	valueBindingUpdateHandler( element, valueAccessor )
+ko.bindingHandlers['value']['update'] = ( element, valueAccessor, allBindingsAccessor ) ->
+	valueBindingUpdateHandler( element, valueAccessor, allBindingsAccessor )
 	
 	if element.tagName == "SELECT"
 		refreshElement( element, "selectmenu" )
@@ -30,8 +30,8 @@ ko.bindingHandlers['value']['update'] = ( element, valueAccessor ) ->
 
 # Override the default 'checked' init to listen for 'change' from enhanced checkboxes and radio buttons.
 checkedBindingInitHandler = ko.bindingHandlers['checked']['init']
-ko.bindingHandlers['checked']['init'] = ( element, valueAccessor ) ->
-	checkedBindingInitHandler( element, valueAccessor )
+ko.bindingHandlers['checked']['init'] = ( element, valueAccessor, allBindingsAccessor ) ->
+	checkedBindingInitHandler( element, valueAccessor, allBindingsAccessor )
 	
 	updateHandler = () ->
 		if element.type == "checkbox"
@@ -89,7 +89,7 @@ ko.bindingHandlers['enable']['update'] = ( element, valueAccessor ) ->
 
 # Override the default 'template' update to create or refresh enhanced form elements.
 templateBindingUpdateHandler = ko.bindingHandlers['template']['update']
-ko.bindingHandlers['template']['update'] = ( element, valueAccessor, allBindingsAccessor, viewModel ) ->
+ko.bindingHandlers['template']['update'] = ( element, valueAccessor, allBindingsAccessor, viewModel, bindingContext ) ->
 	refreshTemplate = () ->
 		$element = $(element)
 		if $element.jqmData("role") is "listview"
@@ -105,7 +105,7 @@ ko.bindingHandlers['template']['update'] = ( element, valueAccessor, allBindings
 	if previousTemplateSubscription?
 		previousTemplateSubscription.dispose()
 	
-	templateBindingUpdateHandler( element, valueAccessor, allBindingsAccessor, viewModel )
+	templateBindingUpdateHandler( element, valueAccessor, allBindingsAccessor, viewModel, bindingContext )
 	
 	refreshTemplate()
 	
